@@ -3,6 +3,7 @@ package Lab_7;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,177 +12,158 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-
-
 public class MyWordCount {
 
-	public static final String fileName = "data/fit.txt";
+	public static final String fileName = "E:\\File_Môn Học\\Git_CTDL\\Lab_7\\Lab_7\\src\\Lab_7\\hamlet.txt";
 
 	private List<String> words = new ArrayList<>();
 
 	public MyWordCount() {
 		try {
-			this.words.addAll(Utils.loadWord(fileName));
+			this.words.addAll(Utils.loadWords(fileName));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
+
+	// Returns a set of WordCount objects that represents the number of timeseach
+	// unique token appears in the file
+	// data/hamlet.txt (or fit.txt)
+	// In this method, we do not consider the order of tokens.
 	public List<WordCount> getWordCounts() {
-		// TODO
-		Map<String, Integer>  wordCountMap = new HashMap<>();
-		
-		for(String word : words) {
-			if(wordCountMap.containsKey(word)) {
-				wordCountMap.put(word, wordCountMap.get(word)+1);
-			} else {
-				wordCountMap.put(word, 1);
-			}
-		}
-		
-		List<WordCount> wordCounts = new ArrayList<>();
-		
-		for(Map.Entry<String, Integer> entry : wordCountMap.entrySet()) {
-				String word = entry.getKey();
-				Integer count = entry.getValue();
-				WordCount wordCount = new WordCount(word, count);
-				
-		        wordCounts.add(wordCount);
-		}
-		return wordCounts;
-		}
-	
-	public Set<String> getUniqueWords() {
-		// TODO
-		Set<String> nWord = new HashSet<>();
-		Map<String, Integer> wordCountMap = new HashMap<>()	;
-		
-		for(String word : words) {
-			if(wordCountMap.containsKey(word)) {
-				wordCountMap.put(word, wordCountMap.get(word) +1);
-			}	else {
-				wordCountMap.put(word, 1);
-			}
-		}
-		for(Map.Entry<String, Integer> entry : wordCountMap.entrySet()) {
-			if(entry.getValue() ==1) {
-				nWord.add(entry.getKey());
-			}
-		}
-		return nWord;
-		}
-	public Set<String> getDistinctWords() {
-		// TODO
-		Set<String> distinctWords = new HashSet<>();
-		
+		List<WordCount> ans = new ArrayList<>();
 		for (String word : words) {
-			distinctWords.add(word);
-		}
-		return distinctWords;
-		}
-	public Set<WordCount> exportWordCounts() {
-		// TODO
-		Map<String, Integer> wordCountMap = new TreeMap<>();
-		Set<WordCount> wordCounts = new HashSet<>();
-		
-		for (String word : words) {
-			if(wordCountMap.containsKey(word)) {
-				wordCountMap.put(word, wordCountMap.get(word) +1);
+			int cnt = 0;
+			WordCount wc = new WordCount(word, count(word));
+			if (!ans.contains(wc)) {
+				ans.add(wc);
 			} else {
-				wordCountMap.put(word, 1);
+				++cnt;
+				wc.setCount(wc.getCount() + cnt);
 			}
 		}
-		for (Map.Entry<String, Integer> entry : wordCountMap.entrySet()) {
-			WordCount wordCount = new WordCount(entry.getKey(), entry.getValue());
-			wordCounts.add(wordCount);
-		}
-		for (WordCount wordCount : wordCounts) {
-	        System.out.println(wordCount.getToken() + " - " + wordCount.getCount());
-	    }
-		return wordCounts;
-		}
-	public Set<WordCount> exportWordCountsOrderByOccurence() {
-		// TODO
-		Map<String, Integer> wordCountMap = new HashMap<>()	;
-		Set<WordCount> wordCounts = new TreeSet<>(Collections.reverseOrder());
-		
-		for (String word : words) {
-			if(wordCountMap.containsKey(word)) {
-				wordCountMap.put(word, wordCountMap.get(word) +1);
-			} else {
-				wordCountMap.put(word, 1);
-			}
-		}
-		
-	    for (Map.Entry<String, Integer> entry : wordCountMap.entrySet()) {
-	        WordCount wordCount = new WordCount(entry.getKey(), entry.getValue());
-	        wordCounts.add(wordCount);
-	    }
-	    
-	    for (WordCount wordCount : wordCounts) {
-	        System.out.println(wordCount.getToken() + " - " + wordCount.getCount());
-	    }
 
-		
-		return wordCounts;
-		}
+		return ans;
 
-	public Set<WordCount> filterWords(String pattern) {
-	    // Tạo một bản sao của danh sách words để thực hiện việc loại bỏ
-	    List<String> filteredWords = new ArrayList<>(words);
-
-	    // Loại bỏ các từ bắt đầu bằng pattern
-	    filteredWords.removeIf(word -> word.startsWith(pattern));
-
-	    // Tạo một Map để đếm số lần xuất hiện của từng từ trong danh sách đã lọc
-	    Map<String, Integer> wordCountMap = new HashMap<>();
-	    for (String word : filteredWords) {
-	        if (wordCountMap.containsKey(word)) {
-	            wordCountMap.put(word, wordCountMap.get(word) + 1);
-	        } else {
-	            wordCountMap.put(word, 1);
-	        }
-	    }
-
-	    // Tạo các đối tượng WordCount từ Map và thêm vào tập hợp wordCounts
-	    Set<WordCount> wordCounts = new TreeSet<>();
-	    for (Map.Entry<String, Integer> entry : wordCountMap.entrySet()) {
-	        WordCount wordCount = new WordCount(entry.getKey(), entry.getValue());
-	        wordCounts.add(wordCount);
-	    }
-
-	    return wordCounts;
 	}
 
+	private int count(String word) {
+		int cnt = 0;
+		for (String w : words) {
+			if (w.equals(word)) {
+				++cnt;
+			}
+		}
+		return cnt;
+	}
+	// Returns the words that their appearances are 1, do not consider  duplidated words
+	public Set<String> getUniqueWords() {
+		Set<String> w1 = new HashSet<>();
+		for (WordCount wc : getWordCounts()) {
+			if (wc.getCount() == 1) {
+				w1.add(wc.getWord());
+			}
+		}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		return w1;
+	}
+	// Returns the words in the text file, duplicated words appear once in the  result
+	public Set<String> getDistinctWords() {
+		Set<String> wc = new HashSet<>();
+		for (WordCount ab : getWordCounts()) {
+			if (ab.getCount() > 1) {
+				wc.add(ab.getWord());
+			}
+		}
+
+		return wc;
+	}
+	// Prints out the number of times each unique token appears in the file
+	// data/hamlet.txt (or fit.txt) according to ascending order of  tokens
+	// Example: An - 3, Bug - 10, ...
+
+	public Set<WordCount> exportWordCounts() {
+		Set<WordCount> wc = new TreeSet<>(new Comparator<WordCount>() {
+
+			@Override
+			public int compare(WordCount o1, WordCount o2) {
+
+				return o1.getWord().compareTo(o2.getWord());
+			}
+
+		});
+
+		wc.addAll(getWordCounts());
+
+		return wc;
+	}
+	// Prints out the number of times each unique token appears in the file
+	// data/hamlet.txt (or fit.txt) according descending order of occurences
+	// Example: Bug - 10, An - 3, Nam - 2.
+
+	public Set<WordCount> exportWordCountsOrderByOccurence() {
+		Set<WordCount> wc = new TreeSet<>(new Comparator<WordCount>() {
+
+			@Override
+			public int compare(WordCount o1, WordCount o2) {
+				int inf = o2.getCount()- o1.getCount();
+				if(inf ==0) return o1.getWord().compareTo(o2.getWord());
+				return inf ;
+			}
+		});
+		wc.addAll(getWordCounts());
+		return wc;
+	}
+	// delete words beginning with the given pattern (i.e., delete words begin 
+	// with 'A' letter
+	public Set<WordCount> filterWords(String pattern) {
+		Set<WordCount> wc = new HashSet<>();
+		for (String word : words) {
+			WordCount cwc = new WordCount(word, count(word));
+			if (!cwc.getWord().startsWith(pattern)) {
+				wc.add(cwc);
+			}
+		}
+		return wc;
+	}
+	public static void main(String[] args) {
+		MyWordCount mwc = new MyWordCount();
+		String abc = "A";
+		
+		List<WordCount> listGetWordCount = mwc.getWordCounts();
+		Set<String> wordsDoNotOverlap = mwc.getUniqueWords();
+		Set<String> duplicatedWordsOnce = mwc.getDistinctWords();
+		Set<WordCount>	sortAB= mwc.exportWordCounts();
+		Set<WordCount>	sortedInDescendingOrder = mwc.exportWordCountsOrderByOccurence();
+		Set<WordCount> delA = mwc.filterWords(abc);
+		
+		
+		
+		
+		System.out.println("Danh Sách WordCount: ");
+		for (WordCount wc : listGetWordCount) {
+			System.out.println(wc);
+		}
+		
+		System.out.println("In ra từ không trùng: ");
+		System.out.println(wordsDoNotOverlap + "\n");
+		
+		System.out.println("In ra từ trùng lụp: ");
+		System.out.println(duplicatedWordsOnce + "\n");
+
+		System.out.println("Sắp Xếp Theo Thứ Tự Bảng Chữ Cái: ");
+	    for (WordCount wc : sortAB) {
+	        System.out.println(wc);
+	    } 
+
+	    System.out.println("Sắp Xếp Theo Thứ Tự Giarm dần: ");
+	    for (WordCount wc : sortedInDescendingOrder) {
+	    	System.out.println(wc);
+	    }
+		
+		System.out.println("In ra các đối tượng đã xóa chữ A đầu :");
+	    for (WordCount wc : delA) {
+	    	System.out.println(wc);
+	}
+	}
 }
